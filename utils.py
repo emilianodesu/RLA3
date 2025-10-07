@@ -13,7 +13,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 class VizDoomGym(Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
-    def __init__(self, cfg="basic", frame_skip=None, render_mode="human"):
+    def __init__(self, cfg="basic", frame_skip=None, render_mode="rgb_array"):
         super().__init__()
 
         self.cfg = cfg
