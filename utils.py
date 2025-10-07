@@ -165,12 +165,12 @@ class TrainAndLoggingCallback(BaseCallback):
         return True
 
 
-def run_vizdoom_demo(cfg="basic", episodes=1, steps=20, render_mode="human", frame_skip=4, seed=42):
+def run_vizdoom_demo(cfg_path="./content/VizDoom/scenarios", cfg="basic", episodes=1, steps=20, render_mode="human", frame_skip=4, seed=42):
     print(f"--- Starting VizDoom demo: {cfg}, render_mode={render_mode}, frame_skip={frame_skip} ---")
     np.random.seed(seed)
 
     # 1. Create environment
-    env = VizDoomGym(cfg=cfg, render_mode=render_mode, frame_skip=frame_skip)
+    env = VizDoomGym(cfg_path=cfg_path, cfg=cfg, render_mode=render_mode, frame_skip=frame_skip)
 
     # 2. Check validity
     print("\n[ Gymnasium check_env validation ]")
@@ -211,4 +211,4 @@ def run_vizdoom_demo(cfg="basic", episodes=1, steps=20, render_mode="human", fra
 
 
 if __name__ == "__main__":
-    run_vizdoom_demo(cfg="deadly_corridor", episodes=1, steps=5, render_mode="rgb_array", frame_skip=4)
+    run_vizdoom_demo(cfg="basic", episodes=1, steps=5, render_mode="rgb_array", frame_skip=4)
