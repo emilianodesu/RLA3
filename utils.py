@@ -13,7 +13,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 class VizDoomGym(Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
-    def __init__(self, cfg="basic", frame_skip=None, render_mode="rgb_array"):
+    def __init__(self, cfg_path="./content/VizDoom/scenarios", cfg="basic", frame_skip=None, render_mode="rgb_array"):
         super().__init__()
 
         self.cfg = cfg
@@ -21,7 +21,7 @@ class VizDoomGym(Env):
         self.render_mode = render_mode
 
         self.game = DoomGame()
-        self.game.load_config(f"./content/VizDoom/scenarios/{cfg}.cfg")
+        self.game.load_config(os.path.join(cfg_path, f"{cfg}.cfg"))
         self.np_random, _ = seeding.np_random(None)
 
         # Only show window if human render mode
