@@ -16,8 +16,8 @@ def make_env(cfg, frame_skip, log_dir, render_mode, seed):
     """
     def _init():
         env = VizDoomGym(cfg=cfg, frame_skip=frame_skip, render_mode=render_mode)
+        env.seed(seed) ###### Check
         env = Monitor(env, log_dir)
-        env.seed(seed)
         return env
     return _init
 
@@ -28,7 +28,7 @@ def parse_args():
     # Basic experiment setup
     parser.add_argument("--run_name", type=str, default=None, help="Optional name for this run (used for folders).")
     parser.add_argument("--cfg", type=str, default="basic", help="Scenario config (e.g. basic, deadly_corridor).")
-    parser.add_argument("--total_timesteps", type=int, default=100_000, help="Number of timesteps to train.")
+    parser.add_argument("--total_timesteps", type=int, default=100000, help="Number of timesteps to train.")
     parser.add_argument("--frame_skip", type=int, default=4, help="Number of frames to skip per action.")
     parser.add_argument("--n_envs", type=int, default=1, help="Number of parallel environments.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
@@ -123,7 +123,7 @@ def main():
 
     # 5. Save final model
     model.save(os.path.join(checkpoint_dir, "final_model"))
-    print(f"✅ Training finished. Final model saved to {checkpoint_dir}")
+    print(f"Training finished. Final model saved to {checkpoint_dir}")
 
 
 if __name__ == "__main__":
