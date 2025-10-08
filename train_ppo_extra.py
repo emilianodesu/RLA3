@@ -9,13 +9,13 @@ from stable_baselines3.common.utils import set_random_seed
 from utils import VizDoomGym, TrainAndLoggingCallback
 
 
-def make_env(cfg, frame_skip, log_dir, render_mode, seed):
+def make_env(cfg, frame_skip, log_dir, render_mode, seed, cfg_path="./content/VizDoom/scenarios"):
     """
     Returns a thunk to create a single VizDoom environment with proper seeding and monitoring.
     Useful for DummyVecEnv/SubprocVecEnv.
     """
     def _init():
-        env = VizDoomGym(cfg=cfg, frame_skip=frame_skip, render_mode=render_mode)
+        env = VizDoomGym(cfg=cfg, frame_skip=frame_skip, render_mode=render_mode, cfg_path=cfg_path)
         env.seed(seed) ###### Check
         env = Monitor(env, log_dir)
         return env
@@ -28,6 +28,7 @@ def parse_args():
     # Basic experiment setup
     parser.add_argument("--run_name", type=str, default=None, help="Optional name for this run (used for folders).")
     parser.add_argument("--cfg", type=str, default="basic", help="Scenario config (e.g. basic, deadly_corridor).")
+    parser.add_argument("--cfg_path", type=str, default="./content/VizDoom/scenarios", help="Path to scenario configs.")
     parser.add_argument("--total_timesteps", type=int, default=100000, help="Number of timesteps to train.")
     parser.add_argument("--frame_skip", type=int, default=4, help="Number of frames to skip per action.")
     parser.add_argument("--n_envs", type=int, default=1, help="Number of parallel environments.")
@@ -75,7 +76,8 @@ def main():
             frame_skip=args.frame_skip,
             log_dir=log_dir,
             render_mode=None,
-            seed=args.seed + i
+            seed=args.seed + i,
+            cfg_path=args.cfg_path
         )
         for i in range(args.n_envs)
     ]

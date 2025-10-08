@@ -10,10 +10,10 @@ from stable_baselines3.common.utils import set_random_seed
 from utils import VizDoomGym, TrainAndLoggingCallback
 
 
-def make_env(cfg: str, log_dir: str, frame_skip: int, seed: int = None):
+def make_env(cfg: str, log_dir: str, frame_skip: int, seed: int = None, cfg_path: str="./content/VizDoom/scenarios"):
     """Factory function to create a monitored VizDoom environment."""
     def _init():
-        env = VizDoomGym(cfg=cfg, render_mode=None, frame_skip=frame_skip)
+        env = VizDoomGym(cfg=cfg, render_mode=None, frame_skip=frame_skip, cfg_path=cfg_path)
         if seed is not None:
             env.reset(seed=seed)
         return Monitor(env, log_dir)
@@ -30,7 +30,8 @@ def train(
     n_epochs: int,
     frame_skip: int,
     seed: int = None,
-    verbose: int = 1
+    verbose: int = 1,
+    cfg_path: str="./content/VizDoom/scenarios"
 ):
     """Train a PPO agent on the given VizDoom environment."""
 
@@ -48,7 +49,7 @@ def train(
         set_random_seed(seed)
 
     # 1. Create environment
-    env = DummyVecEnv([make_env(cfg, log_dir, frame_skip, seed=seed)])
+    env = DummyVecEnv([make_env(cfg, log_dir, frame_skip, seed=seed, cfg_path=cfg_path)])
 
     # 2. Create PPO model
     model = PPO(
@@ -79,6 +80,7 @@ def train(
 def parse_args():
     parser = argparse.ArgumentParser(description="Train PPO agent on VizDoom.")
     parser.add_argument("--cfg", type=str, default="basic", help="Scenario config name")
+    parser.add_argument("--cfg_path", type=str, default="./content/VizDoom/scenarios", help="Path to scenario configs")
     parser.add_argument("--timesteps", type=int, default=100000, help="Number of training timesteps")
     parser.add_argument("--learning_rate", type=float, default=2.5e-4, help="Learning rate")
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
@@ -95,6 +97,7 @@ if __name__ == "__main__":
     args = parse_args()
     train(
         cfg=args.cfg,
+        cfg_path=args.cfg_path,
         timesteps=args.timesteps,
         learning_rate=args.learning_rate,
         gamma=args.gamma,
