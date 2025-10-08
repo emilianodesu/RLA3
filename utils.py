@@ -8,6 +8,33 @@ from gymnasium.spaces import Discrete, Box
 from gymnasium.utils import seeding
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import BaseCallback
+from IPython.display import HTML
+import base64
+import os
+
+
+def display_video(video_path: str, width: int = 640, height: int = 480):
+    """
+    Display an MP4 video inline in a Jupyter notebook or Google Colab cell.
+    Works on Windows and Colab by embedding the video as base64.
+
+    Args:
+        video_path (str): Path to the MP4 video file.
+        width (int): Display width of the video player.
+        height (int): Display height of the video player.
+    """
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file not found: {video_path}")
+
+    with open(video_path, "rb") as f:
+        mp4 = f.read()
+    data_url = "data:video/mp4;base64," + base64.b64encode(mp4).decode()
+
+    return HTML(f"""
+    <video width="{width}" height="{height}" controls>
+        <source src="{data_url}" type="video/mp4">
+    </video>
+    """)
 
 
 class VizDoomGym(Env):

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import argparse
 import numpy as np
 import torch
@@ -10,13 +11,20 @@ from stable_baselines3.common.utils import set_random_seed
 from utils import VizDoomGym, TrainAndLoggingCallback
 
 
-def make_env(cfg: str, log_dir: str, frame_skip: int, seed: int = None, cfg_path: str="./content/VizDoom/scenarios"):
+def make_env(cfg: str, frame_skip: int=4, seed: int = None, cfg_path: str="./content/VizDoom/scenarios", run_name=None):
     """Factory function to create a monitored VizDoom environment."""
+    log_dir = f"./logs/train_{cfg}/"
+    os.makedirs(log_dir, exist_ok=True)
+    if run_name is None:
+        run_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    monitor_path = os.path.join(log_dir, run_name)
+
     def _init():
         env = VizDoomGym(cfg=cfg, render_mode=None, frame_skip=frame_skip, cfg_path=cfg_path)
         if seed is not None:
             env.reset(seed=seed)
-        return Monitor(env, log_dir)
+        return Monitor(env, monitor_path)
     return _init
 
 
@@ -31,15 +39,14 @@ def train(
     frame_skip: int,
     seed: int = None,
     verbose: int = 1,
-    cfg_path: str="./content/VizDoom/scenarios"
+    cfg_path: str="./content/VizDoom/scenarios",
+    run_name: str = None
 ):
     """Train a PPO agent on the given VizDoom environment."""
-
     log_dir = f"./logs/train_{cfg}/"
-    checkpoint_dir = f"./train/{cfg}/"
-
-    os.makedirs(checkpoint_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
+    checkpoint_dir = f"./train/{cfg}/"
+    os.makedirs(checkpoint_dir, exist_ok=True)
 
     # 0. Set global seeds
     if seed is not None:
@@ -49,7 +56,7 @@ def train(
         set_random_seed(seed)
 
     # 1. Create environment
-    env = DummyVecEnv([make_env(cfg, log_dir, frame_skip, seed=seed, cfg_path=cfg_path)])
+    env = DummyVecEnv([make_env(cfg, frame_skip, seed=seed, cfg_path=cfg_path, run_name=run_name)])
 
     # 2. Create PPO model
     model = PPO(
@@ -90,6 +97,7 @@ def parse_args():
     parser.add_argument("--frame_skip", type=int, default=4, help="Frame skip for VizDoom")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
     parser.add_argument("--verbose", type=int, default=1, help="Verbosity level")
+    parser.add_argument("--run_name", type=str, default=None, help="Run name for logging (not used in training)")
     return parser.parse_args()
 
 
@@ -107,4 +115,5 @@ if __name__ == "__main__":
         frame_skip=args.frame_skip,
         seed=args.seed,
         verbose=args.verbose,
+        run_name=args.run_name
     )

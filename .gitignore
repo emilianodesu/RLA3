@@ -1,2 +1,3 @@
 /.idea/
 /train/*/checkpoint*.zip
+/__pycache__/

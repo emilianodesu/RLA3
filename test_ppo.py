@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import argparse
 import numpy as np
 from stable_baselines3 import PPO
@@ -9,25 +10,29 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from utils import VizDoomGym
 
 
-def make_env(cfg: str, render_mode=None, frame_skip=4, seed: int = None, cfg_path: str="./content/VizDoom/scenarios"):
+def make_env(cfg: str, render_mode=None, frame_skip=4, seed: int = None, cfg_path: str="./content/VizDoom/scenarios", run_name=None,):
     """Factory function to create a monitored VizDoomGym environment."""
     log_dir = f"./logs/eval_{cfg}/"
     os.makedirs(log_dir, exist_ok=True)
+    if run_name is None:
+        run_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    monitor_path = os.path.join(log_dir, run_name)
 
     def _init():
         env = VizDoomGym(cfg=cfg, render_mode=render_mode, frame_skip=frame_skip, cfg_path=cfg_path)
         if seed is not None:
             env.reset(seed=seed)
-        return Monitor(env, log_dir)
+        return Monitor(env, monitor_path)
     return _init
 
 
-def evaluate_trained_model(model_path: str, cfg: str, n_eval_episodes: int, seed: int = None, cfg_path: str="./content/VizDoom/scenarios"):
+def evaluate_trained_model(model_path: str, cfg: str, n_eval_episodes: int, seed: int = None, cfg_path: str="./content/VizDoom/scenarios", run_name=None):
     """Load a trained PPO model and evaluate it on the given environment."""
     print(f"Loading model from: {model_path}")
     model = PPO.load(model_path)
 
-    eval_env = DummyVecEnv([make_env(cfg, render_mode=None, seed=seed, cfg_path=cfg_path)])
+    eval_env = DummyVecEnv([make_env(cfg, render_mode=None, seed=seed, cfg_path=cfg_path, run_name=run_name)])
 
     mean_reward, std_reward = evaluate_policy(
         model,
@@ -43,13 +48,13 @@ def evaluate_trained_model(model_path: str, cfg: str, n_eval_episodes: int, seed
     return model
 
 
-def record_video(model, cfg: str, video_length: int, seed: int = None, cfg_path: str="./content/VizDoom/scenarios"):
+def record_video(model, cfg: str, video_length: int, seed: int = None, cfg_path: str="./content/VizDoom/scenarios", run_name=None):
     """Record a video of the trained model playing the environment."""
     print(f"Recording gameplay for {video_length} steps...")
     video_dir = f"./videos/{cfg}"
     os.makedirs(video_dir, exist_ok=True)
 
-    video_env = DummyVecEnv([make_env(cfg, render_mode="rgb_array", seed=seed, cfg_path=cfg_path)])
+    video_env = DummyVecEnv([make_env(cfg, render_mode="rgb_array", seed=seed, cfg_path=cfg_path, run_name=run_name)])
     video_env = VecVideoRecorder(
         video_env,
         video_dir,
@@ -78,6 +83,7 @@ def main():
     parser.add_argument("--video", action="store_true", help="If set, record a gameplay video")
     parser.add_argument("--video_length", type=int, default=500, help="Number of steps to record in video")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
+    parser.add_argument("--run_name", type=str, default=None, help="Run name for logging and video naming")
 
     args = parser.parse_args()
 
